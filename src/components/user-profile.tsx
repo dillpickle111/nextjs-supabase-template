@@ -1,3 +1,5 @@
+"use client";
+
 import { UserButton, useUser } from "@clerk/nextjs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
