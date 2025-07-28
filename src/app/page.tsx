@@ -1,9 +1,12 @@
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { SignInButton, SignUpButton, useUser } from "@clerk/nextjs";
 import Link from "next/link";
 
 export default function Home() {
+  const { user, isLoaded } = useUser();
+
   return (
     <>
       <SiteHeader />
@@ -17,6 +20,25 @@ export default function Home() {
             This template is your foundation for creating something amazing.
             Clean, modern, and ready for your innovation.
           </p>
+
+          {isLoaded && (
+            <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
+              {user ? (
+                <Button variant="default" asChild>
+                  <Link href="/dashboard">Go to Dashboard</Link>
+                </Button>
+              ) : (
+                <>
+                  <SignInButton mode="modal">
+                    <Button variant="default">Sign In</Button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <Button variant="outline">Sign Up</Button>
+                  </SignUpButton>
+                </>
+              )}
+            </div>
+          )}
 
           <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
             <Button variant="default" asChild>

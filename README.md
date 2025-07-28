@@ -1,125 +1,194 @@
-# Next.js Supabase Template
+# Next.js + Supabase + Clerk + Vercel Template
 
-<div align="center">
-  <img src="public/nextjs-thumbnail.png" alt="Next.js Supabase Template Preview" width="100%" />
-</div>
-
-Modern full-stack template with Next.js 14, Supabase, Tailwind CSS, and shadcn/ui. Perfect for building web applications quickly.
+A modern, full-stack template built with Next.js 15, Supabase, Clerk authentication, and ready for Vercel deployment.
 
 ## Features
 
-- **Next.js 14** - React framework
-- **Supabase** - Auth and database made easy
-- **shadcn/ui + Tailwind** - Beautiful, ready-to-use components
-- **TypeScript** - Type safety for better code
+- ⚡ **Next.js 15** with App Router and Turbopack
+- 🔐 **Clerk Authentication** - Complete auth system with sign-in/sign-up
+- 🗄️ **Supabase** - PostgreSQL database with real-time subscriptions
+- 🎨 **Tailwind CSS** - Utility-first CSS framework
+- 🌙 **Dark Mode** - Built-in theme switching
+- 📱 **Responsive Design** - Mobile-first approach
+- 🚀 **Vercel Ready** - Optimized for deployment
+- 🔧 **TypeScript** - Full type safety
+- ⚛️ **React 19** - Latest React features
 
-## Before You Start
+## Quick Start
 
-Create these free accounts (you'll need them):
+### 1. Clone the repository
 
-1. [GitHub](https://github.com) - to store your code
-2. [Vercel](https://vercel.com) - to make your site live (use GitHub to sign up)
-3. [Supabase](https://supabase.com) - for your database (use GitHub to sign up)
+```bash
+git clone <your-repo-url>
+cd nextjs-supabase-template
+```
 
-## Step-by-Step Guide
+### 2. Install dependencies
 
-### 1. Get Your Own Copy of the Template
+```bash
+npm install
+```
 
-1. Go to [github.com/juanmaramos/nextjs-supabase-template](https://github.com/juanmaramos/nextjs-supabase-template)
-2. Click the green "Use this template" button
-3. Click "Create a new repository"
-4. Fill in:
-   - Repository name (e.g., "my-website")
-   - Description (optional)
-   - Select "Public"
-5. Click "Create repository"
+### 3. Set up environment variables
 
-### 2. Set Up Your Computer for Coding
+Copy the example environment file and fill in your credentials:
 
-1. Download and install these two programs:
+```bash
+cp env.example .env.local
+```
 
-   - [Cursor](https://cursor.sh) - This is where you'll write your code
-   - [Node.js](https://nodejs.org) - Pick the "LTS" version
+Update `.env.local` with your actual values:
 
-2. Open your project in Cursor:
+```env
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
-   - Open Cursor
-   - Click "Open a folder" (blue button in the center)
-   - Go to your GitHub repository URL (created in step 1)
-   - Click the green "Code" button
-   - Copy the HTTPS URL (e.g., https://github.com/yourusername/my-website.git)
-   - Open Terminal in Cursor (View > Terminal or Cmd+J/Ctrl+J)
-   - Type:
-     ```bash
-     cd Documents/Projects  # or wherever you want your code
-     git clone [paste your URL here]
-     ```
-   - Once cloned, click "Open a folder" again and select your new project folder
+# Clerk Configuration
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/
+```
 
-3. Get your project running:
-   - In Cursor, press Cmd+J (Mac) or Ctrl+J (Windows) to open the terminal
-   - Type these commands one by one:
-     ```bash
-     npm install
-     npm run dev
-     ```
-   - Open your web browser to http://localhost:3000
-   - You should see your website running locally!
+### 4. Set up Supabase
 
-### 3. Make Changes to Your Code
+1. Create a new project at [supabase.com](https://supabase.com)
+2. Get your project URL and anon key from Settings > API
+3. Create a `users` table in your Supabase database:
 
-1. Edit files in Cursor
-2. See your changes live at http://localhost:3000
-3. Save your changes to GitHub:
-   - Press Cmd+Shift+G (Mac) or Ctrl+Shift+G (Windows)
-   - Type a message describing what you changed
-   - Click "Commit"
-   - Click "Sync" to save to GitHub
+```sql
+CREATE TABLE users (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  clerk_id TEXT UNIQUE NOT NULL,
+  email TEXT,
+  name TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 
-### 4. Add Your Database (Optional)
+-- Enable Row Level Security
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 
-1. Go to [supabase.com](https://supabase.com)
-2. Click "New Project"
-3. After creation, go to Project Settings > API
-4. Copy these values:
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL=your-project-url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-   ```
-5. Create a file named `.env.local` in your project
-6. Paste the values into this file
+-- Create policy for users to access their own data
+CREATE POLICY "Users can view own data" ON users
+  FOR SELECT USING (clerk_id = auth.jwt() ->> 'sub');
 
-### 5. Make Your Site Live
+CREATE POLICY "Users can insert own data" ON users
+  FOR INSERT WITH CHECK (clerk_id = auth.jwt() ->> 'sub');
 
-1. Go to [vercel.com/new](https://vercel.com/new)
-2. Select your repository
-3. If you added a database, under "Environment Variables", add your Supabase values
-4. Click "Deploy"
-5. Wait a few minutes - your site is going live!
+CREATE POLICY "Users can update own data" ON users
+  FOR UPDATE USING (clerk_id = auth.jwt() ->> 'sub');
+```
+
+### 5. Set up Clerk
+
+1. Create a new application at [clerk.com](https://clerk.com)
+2. Get your publishable key and secret key from the dashboard
+3. Configure your sign-in and sign-up URLs in the Clerk dashboard
+
+### 6. Run the development server
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to see the application.
 
 ## Project Structure
 
 ```
-src/
-├── app/          # Your pages live here
-├── components/   # Reusable UI components
-└── lib/         # Helper functions
+├── src/
+│   ├── app/                    # Next.js App Router
+│   │   ├── api/               # API routes
+│   │   ├── dashboard/         # Protected dashboard page
+│   │   ├── sign-in/          # Clerk sign-in page
+│   │   ├── sign-up/          # Clerk sign-up page
+│   │   ├── globals.css       # Global styles
+│   │   ├── layout.tsx        # Root layout
+│   │   └── page.tsx          # Home page
+│   ├── components/            # React components
+│   │   ├── ui/               # Reusable UI components
+│   │   ├── site-header.tsx   # Site header component
+│   │   ├── theme-provider.tsx # Theme provider
+│   │   └── user-profile.tsx  # User profile component
+│   ├── lib/                  # Utility functions
+│   │   ├── supabase.ts       # Supabase client
+│   │   └── utils.ts          # Utility functions
+│   └── middleware.ts         # Clerk middleware
+├── public/                   # Static assets
+├── env.example              # Environment variables template
+├── vercel.json              # Vercel configuration
+└── package.json             # Dependencies and scripts
 ```
 
-## Adding Features
+## Deployment
 
-Add pre-built components:
+### Deploy to Vercel
 
-```bash
-npx shadcn@latest add button  # Example: adding a button component
-```
+1. Push your code to GitHub
+2. Connect your repository to Vercel
+3. Add your environment variables in the Vercel dashboard
+4. Deploy!
 
-## Need Help?
+### Environment Variables for Production
 
-- Use Cursor's AI: Type `/` while coding or click the chat icon
-- Check out the docs: [Next.js](https://nextjs.org/docs), [Supabase](https://supabase.com/docs), [shadcn/ui](https://ui.shadcn.com)
-- Visit [cursor.sh/docs](https://cursor.sh/docs) to learn about Cursor features
+Make sure to add these environment variables in your Vercel project settings:
 
----
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- `CLERK_SECRET_KEY`
+- `NEXT_PUBLIC_CLERK_SIGN_IN_URL`
+- `NEXT_PUBLIC_CLERK_SIGN_UP_URL`
+- `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL`
+- `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL`
 
-Made by [Juan Ramos](https://www.juanmaramos.com) • MIT License
+## API Routes
+
+### `/api/users`
+
+- `GET` - Retrieve user data from Supabase
+- `POST` - Create or update user data in Supabase
+
+Both endpoints require authentication via Clerk.
+
+## Authentication Flow
+
+1. Users can sign up/sign in using Clerk
+2. After authentication, users are redirected to the dashboard
+3. User data is stored in Supabase with Clerk user ID as reference
+4. Protected routes are automatically handled by Clerk middleware
+
+## Customization
+
+### Adding New Pages
+
+Create new pages in the `src/app` directory following Next.js 13+ conventions.
+
+### Styling
+
+The project uses Tailwind CSS. You can customize the design system in `tailwind.config.ts`.
+
+### Database Schema
+
+Modify the Supabase database schema according to your needs. Remember to update Row Level Security policies.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## License
+
+MIT License - see LICENSE file for details.
+
+## Support
+
+For support, please open an issue on GitHub or contact the maintainers.
