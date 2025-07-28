@@ -1,3 +1,5 @@
+"use client";
+
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -62,17 +64,6 @@ export default function Home() {
               </p>
             </CardContent>
           </Card>
-
-          <footer className="mt-8 text-sm text-muted-foreground">
-            <Link
-              href="https://www.juanmaramos.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-primary transition-colors duration-200"
-            >
-              Made by Juan Ramos
-            </Link>
-          </footer>
         </section>
       </main>
     </>
