@@ -1,5 +1,4 @@
 import { UserButton, useUser } from "@clerk/nextjs";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function UserProfile() {
