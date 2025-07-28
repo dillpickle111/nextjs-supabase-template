@@ -10,7 +10,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const supabase = createClient();
+    const supabase = await createClient();
     
     // Example: Get user data from Supabase
     const { data, error } = await supabase
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const supabase = createClient();
+    const supabase = await createClient();
     
     // Example: Create or update user data in Supabase
     const { data, error } = await supabase
